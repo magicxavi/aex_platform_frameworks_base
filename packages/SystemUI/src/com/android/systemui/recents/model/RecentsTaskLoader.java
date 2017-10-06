@@ -35,6 +35,7 @@ import com.android.systemui.recents.Recents;
 import com.android.systemui.recents.RecentsConfiguration;
 import com.android.systemui.recents.RecentsDebugFlags;
 import com.android.systemui.recents.events.activity.PackagesChangedEvent;
+import com.android.systemui.recents.misc.IconPackHelper;
 import com.android.systemui.recents.misc.SystemServicesProxy;
 import com.android.systemui.recents.misc.Utilities;
 
@@ -171,12 +172,21 @@ class BackgroundTaskLoader implements Runnable {
 
                         // Load the icon if it is stale or we haven't cached one yet
                         if (cachedIcon == null) {
-                            cachedIcon = ssp.getBadgedTaskDescriptionIcon(t.taskDescription,
-                                    t.key.userId, mContext.getResources());
+                            ActivityInfo info = ssp.getActivityInfo(
+                                    t.key.getComponent(), t.key.userId);
+                            if (info != null && IconPackHelper.getInstance(mContext).isIconPackLoaded()) {
+                                int iconId = IconPackHelper.getInstance(mContext).getResourceIdForActivityIcon(info);
+                                if (iconId != 0) {
+                                    cachedIcon = IconPackHelper.getInstance(mContext).getIconPackResources().getDrawable(iconId);
+                                }
+                            }
 
                             if (cachedIcon == null) {
-                                ActivityInfo info = ssp.getActivityInfo(
-                                        t.key.getComponent(), t.key.userId);
+                                cachedIcon = ssp.getBadgedTaskDescriptionIcon(t.taskDescription,
+                                        t.key.userId, mContext.getResources());
+                            }
+
+                            if (cachedIcon == null) {
                                 if (info != null) {
                                     if (DEBUG) Log.d(TAG, "Loading icon: " + t.key);
                                     cachedIcon = ssp.getBadgedActivityIcon(info, t.key.userId);
@@ -454,6 +464,10 @@ public class RecentsTaskLoader {
         }
     }
 
+    public void resetIconCache() {
+        mIconCache.evictAll();
+    }
+
     /**
      * Returns the cached task label if the task key is not expired, updating the cache if it is.
      */
@@ -509,7 +523,7 @@ public class RecentsTaskLoader {
     /**
      * Returns the cached task icon if the task key is not expired, updating the cache if it is.
      */
-    Drawable getAndUpdateActivityIcon(Task.TaskKey taskKey, ActivityManager.TaskDescription td,
+    Drawable getAndUpdateActivityIcon(Context context, Task.TaskKey taskKey, ActivityManager.TaskDescription td,
             Resources res, boolean loadIfNotCached) {
         SystemServicesProxy ssp = Recents.getSystemServices();
 
@@ -520,6 +534,18 @@ public class RecentsTaskLoader {
         }
 
         if (loadIfNotCached) {
+            ActivityInfo activityInfo = getAndUpdateActivityInfo(taskKey);
+
+            // Return and cache the icon package icon for this app, if available
+            if (activityInfo != null && IconPackHelper.getInstance(context).isIconPackLoaded()) {
+                int iconId = IconPackHelper.getInstance(context).getResourceIdForActivityIcon(activityInfo);
+                if (iconId != 0) {
+                    icon = IconPackHelper.getInstance(context).getIconPackResources().getDrawable(iconId);
+                    mIconCache.put(taskKey, icon);
+                    return icon;
+                }
+            }
+
             // Return and cache the task description icon if it exists
             icon = ssp.getBadgedTaskDescriptionIcon(td, taskKey.userId, res);
             if (icon != null) {
@@ -528,7 +554,6 @@ public class RecentsTaskLoader {
             }
 
             // Load the icon from the activity info and cache it
-            ActivityInfo activityInfo = getAndUpdateActivityInfo(taskKey);
             if (activityInfo != null) {
                 icon = ssp.getBadgedActivityIcon(activityInfo, taskKey.userId);
                 if (icon != null) {

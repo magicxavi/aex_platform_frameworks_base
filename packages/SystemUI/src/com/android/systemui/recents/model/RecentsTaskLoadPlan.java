@@ -184,7 +184,7 @@ public class RecentsTaskLoadPlan {
             String dismissDescription = String.format(dismissDescFormat, titleDescription);
             String appInfoDescription = String.format(appInfoDescFormat, titleDescription);
             Drawable icon = isStackTask
-                    ? loader.getAndUpdateActivityIcon(taskKey, t.taskDescription, res, false)
+                    ? loader.getAndUpdateActivityIcon(mContext, taskKey, t.taskDescription, res, false)
                     : null;
             Bitmap thumbnail = loader.getAndUpdateThumbnail(taskKey, false /* loadIfNotCached */);
             int activityColor = loader.getActivityPrimaryColor(t.taskDescription);
@@ -238,7 +238,7 @@ public class RecentsTaskLoadPlan {
 
             if (opts.loadIcons && (isRunningTask || isVisibleTask)) {
                 if (task.icon == null) {
-                    task.icon = loader.getAndUpdateActivityIcon(taskKey, task.taskDescription, res,
+                    task.icon = loader.getAndUpdateActivityIcon(mContext, taskKey, task.taskDescription, res,
                             true);
                 }
             }
