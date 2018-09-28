@@ -188,26 +188,37 @@ class SaveImageInBackgroundTask extends AsyncTask<Void, Void, Void> {
                 .setCategory(Notification.CATEGORY_PROGRESS)
                 .setWhen(now)
                 .setShowWhen(true)
-                .setColor(r.getColor(com.android.internal.R.color.system_notification_accent_color))
-                .setStyle(mNotificationStyle)
-                .setPublicVersion(mPublicNotificationBuilder.build());
-            mNotificationBuilder.setFlag(Notification.FLAG_NO_CLEAR, true);
-            SystemUI.overrideNotificationAppName(context, mNotificationBuilder);
+                .setColor(r.getColor(
+                        com.android.internal.R.color.system_notification_accent_color));
+        SystemUI.overrideNotificationAppName(context, mPublicNotificationBuilder);
 
-            mNotificationManager.notify(SystemMessage.NOTE_GLOBAL_SCREENSHOT, mNotificationBuilder.build());
+        mNotificationBuilder = new Notification.Builder(context)
+            .setTicker(r.getString(R.string.screenshot_saving_ticker)
+                    + (mTickerAddSpace ? " " : ""))
+            .setContentTitle(r.getString(R.string.screenshot_saving_title))
+            .setContentText(r.getString(R.string.screenshot_saving_text))
+            .setSmallIcon(R.drawable.stat_notify_image)
+            .setWhen(now)
+            .setShowWhen(true)
+            .setColor(r.getColor(com.android.internal.R.color.system_notification_accent_color))
+            .setStyle(mNotificationStyle)
+            .setPublicVersion(mPublicNotificationBuilder.build());
+        mNotificationBuilder.setFlag(Notification.FLAG_NO_CLEAR, true);
+        SystemUI.overrideNotificationAppName(context, mNotificationBuilder);
 
-            /**
-             * NOTE: The following code prepares the notification builder for updating the notification
-             * after the screenshot has been written to disk.
-             */
+        mNotificationManager.notify(SystemMessage.NOTE_GLOBAL_SCREENSHOT, mNotificationBuilder.build());
 
-            // On the tablet, the large icon makes the notification appear as if it is clickable (and
-            // on small devices, the large icon is not shown) so defer showing the large icon until
-            // we compose the final post-save notification below.
-            mNotificationBuilder.setLargeIcon(icon.createAshmemBitmap());
-            // But we still don't set it for the expanded view, allowing the smallIcon to show here.
-            mNotificationStyle.bigLargeIcon((Bitmap) null);
-        }
+        /**
+         * NOTE: The following code prepares the notification builder for updating the notification
+         * after the screenshot has been written to disk.
+         */
+
+        // On the tablet, the large icon makes the notification appear as if it is clickable (and
+        // on small devices, the large icon is not shown) so defer showing the large icon until
+        // we compose the final post-save notification below.
+        mNotificationBuilder.setLargeIcon(icon.createAshmemBitmap());
+        // But we still don't set it for the expanded view, allowing the smallIcon to show here.
+        mNotificationStyle.bigLargeIcon((Bitmap) null);
     }
 
     @Override
