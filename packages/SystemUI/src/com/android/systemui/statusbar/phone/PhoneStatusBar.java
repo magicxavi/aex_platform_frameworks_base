@@ -806,10 +806,14 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     }
 
     private void updateRecentsIconPack() {
-        String currentIconPack = Settings.System.getStringForUser(mContext.getContentResolver(),
-            Settings.System.RECENTS_ICON_PACK, mCurrentUserId);
-        IconPackHelper.getInstance(mContext).updatePrefs(currentIconPack);
-        mRecents.resetIconCache();
+        boolean slimRecents = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.USE_SLIM_RECENTS, 0, mCurrentUserId) == 1;
+        if (!slimRecents) {
+            String currentIconPack = Settings.System.getStringForUser(mContext.getContentResolver(),
+                Settings.System.RECENTS_ICON_PACK, mCurrentUserId);
+            mRecents.resetIconCache();
+            IconPackHelper.getInstance(mContext).updatePrefs(currentIconPack);
+        }
     }
 
     // ensure quick settings is disabled until the current user makes it through the setup wizard
