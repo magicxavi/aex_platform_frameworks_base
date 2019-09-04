@@ -346,6 +346,11 @@ final class DefaultPermissionGrantPolicy {
                 grantRuntimePermissionsLPw(camera2package, STORAGE_PERMISSIONS, userId);
             }
 
+            // OmniJaws
+            PackageParser.Package omnijawsPackage = getSystemPackage("org.omnirom.omnijaws");
+            if (omnijawsPackage != null && doesPackageSupportRuntimePermissions(omnijawsPackage)) {
+            grantRuntimePermissions(omnijawsPackage, LOCATION_PERMISSIONS, true, userId);
+            }
             // Clock
             PackageParser.Package deskclockpackage = getSystemPackageLPr(
                     "com.android.deskclock");
