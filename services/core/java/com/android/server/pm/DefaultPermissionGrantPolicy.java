@@ -347,9 +347,9 @@ final class DefaultPermissionGrantPolicy {
             }
 
             // OmniJaws
-            PackageParser.Package omnijawsPackage = getSystemPackage("org.omnirom.omnijaws");
+            PackageParser.Package omnijawsPackage = getSystemPackageLPr("org.omnirom.omnijaws");
             if (omnijawsPackage != null && doesPackageSupportRuntimePermissions(omnijawsPackage)) {
-            grantRuntimePermissions(omnijawsPackage, LOCATION_PERMISSIONS, true, userId);
+            grantRuntimePermissionsLPw(omnijawsPackage, LOCATION_PERMISSIONS, true, userId);
             }
             // Clock
             PackageParser.Package deskclockpackage = getSystemPackageLPr(
